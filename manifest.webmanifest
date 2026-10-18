@@ -1,0 +1,21 @@
+{
+  "name": "おりーぶ庵 勤怠",
+  "short_name": "おりーぶ庵 勤怠",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#edf3f0",
+  "theme_color": "#126a56",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
