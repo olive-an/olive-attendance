@@ -1,1 +1,72 @@
-<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#126a56"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="おりーぶ庵 勤怠"><link rel="apple-touch-icon" href="./icon-192.png"><link rel="manifest" href="./manifest.webmanifest"><title>岩久保専用｜おりーぶ庵勤怠</title><style>body{margin:0;background:#edf3f0;color:#18362d;font-family:-apple-system,BlinkMacSystemFont,'Noto Sans JP',sans-serif}.app{max-width:480px;margin:auto;min-height:100vh;background:#fff;padding:24px;box-sizing:border-box}small{color:#64786e}h1{font-size:24px;margin:8px 0 25px}.panel{background:#eff6f2;border-radius:18px;padding:18px;margin:16px 0}.row{display:flex;justify-content:space-between;margin:12px 0;gap:10px}.status{font-size:24px;font-weight:750;text-align:center;padding:20px}.button{border:0;width:100%;padding:22px;border-radius:16px;color:#fff;font-size:23px;font-weight:700;margin:8px 0;background:#14815c}.button.out{background:#315f91}.button:disabled{background:#a9b7b0}.history{border-bottom:1px solid #ddd;padding:13px 0;line-height:1.8}.muted{color:#6d7d75;font-size:13px}.warning{padding:12px;background:#fff5dc;border-radius:12px;font-size:13px}button.secondary{background:#f2f4f2;color:#24463a;border:1px solid #ccd7d0;padding:12px;border-radius:12px}#clock{font-size:20px;text-align:center;font-variant-numeric:tabular-nums}</style></head><body><main class="app"><small>おりーぶ庵株式会社　｜　個人用試作アプリ</small><h1>岩久保 博一　勤怠打刻</h1><div class="panel"><div class="row"><span>勤務先</span><b>本社事務所</b></div><div class="row"><span>基本勤務</span><b>9:00〜18:00</b></div><div class="row"><span>休憩</span><b>60分（自動控除）</b></div></div><div id="clock"></div><div class="status" id="status">勤務前</div><button class="button" id="in">出勤する</button><button class="button out" id="out">退勤する</button><p id="notice" aria-live="polite"></p><h2>打刻履歴</h2><div id="history"></div><div class="panel"><b>データ出力（試作）</b><p class="muted">この端末の打刻記録をCSVで保存できます。</p><button class="secondary" id="export">CSVを保存</button></div><p class="warning">試作版です。打刻データはこの端末のブラウザ内だけに保存され、他の端末・管理者とは同期しません。ブラウザのデータ削除で消える場合があります。正式な勤怠管理には使用しないでください。</p></main><script>const key='olive_iwakubo_demo_v1';let data=[];try{data=JSON.parse(localStorage.getItem(key)||'[]')}catch(e){}const $=id=>document.getElementById(id),dt=()=>{let d=new Date();return new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Tokyo',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(d)};function render(){const last=data.at(-1),active=last&&!last.out;$('status').textContent=active?'勤務中':last?.out?'退勤済':'勤務前';$('in').disabled=!!active;$('out').disabled=!active;$('history').replaceChildren();for(const r of [...data].reverse()){let div=document.createElement('div');div.className='history';let text='出勤：'+r.in+'\n退勤：'+(r.out||'未打刻');if(r.out){let minutes=Math.max(0,Math.round((new Date(r.outISO)-new Date(r.inISO))/60000)-60);text+='\n休憩：60分｜実労働（試算）：'+Math.floor(minutes/60)+'時間'+minutes%60+'分'}div.style.whiteSpace='pre-line';div.textContent=text;$('history').append(div)}if(!data.length)$('history').textContent='まだ記録はありません'}function save(){localStorage.setItem(key,JSON.stringify(data));render()}$('in').onclick=()=>{if(data.at(-1)&&!data.at(-1).out)return;const d=new Date();if(!confirm('出勤を記録しますか？'))return;data.push({in:dt(),inISO:d.toISOString(),out:null,outISO:null});save();$('notice').textContent='出勤を記録しました'};$('out').onclick=()=>{if(!data.at(-1)||data.at(-1).out)return;if(!confirm('退勤を記録しますか？'))return;const d=new Date();data.at(-1).out=dt();data.at(-1).outISO=d.toISOString();save();$('notice').textContent='退勤を記録しました'};$('export').onclick=()=>{const rows=[['氏名','出勤','退勤','休憩分','実労働分'],...data.map(r=>['岩久保 博一',r.in,r.out||'',60,r.out?Math.max(0,Math.round((new Date(r.outISO)-new Date(r.inISO))/60000)-60):''])];const csv='\ufeff'+rows.map(r=>r.map(v=>'"'+String(v).replaceAll('"','""')+'"').join(',')).join('\r\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='岩久保_勤怠デモ.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};setInterval(()=>$('clock').textContent=dt(),1000);$('clock').textContent=dt();render();if("serviceWorker" in navigator)navigator.serviceWorker.register("./sw.js").catch(()=>{});</script></body></html>
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#126a56"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="おりーぶ庵 勤怠"><link rel="apple-touch-icon" href="./icon-192.png"><link rel="manifest" href="./manifest.webmanifest"><title>おりーぶ庵 打刻管理</title><link rel="stylesheet" href="./style.css"></head><body>
+<main class="app">
+<small>おりーぶ庵株式会社　｜　打刻管理 Ver.2</small>
+
+<section id="login" class="hidden">
+<h1>ログイン</h1>
+<label for="empId">従業員番号</label><input id="empId" inputmode="numeric" autocomplete="username">
+<label for="pin">PIN(数字6桁)</label><input id="pin" type="password" inputmode="numeric" maxlength="6" autocomplete="current-password">
+<button class="button" id="loginBtn">ログイン</button>
+<p class="notice" id="loginMsg" role="alert"></p>
+<p class="muted">従業員番号とPINは管理者(岩久保)からお渡しします。</p>
+</section>
+
+<section id="main" class="hidden">
+<div class="top"><h1 id="who"></h1><button class="secondary small" id="menuBtn">設定</button></div>
+<div class="tabs hidden" id="tabs"><button id="tabPunch" class="on">打刻</button><button id="tabAdmin">管理</button></div>
+
+<div id="punchView">
+<div id="clock"></div>
+<div class="status" id="state">…</div>
+<div id="inForm">
+<label>勤務区分</label><div class="seg" id="shiftSeg"></div>
+<label for="site">勤務先</label><select id="site"></select>
+</div>
+<button class="button" id="inBtn">出勤する</button>
+<button class="button out" id="outBtn">退勤する</button>
+<p class="notice" id="msg" role="status"></p>
+<div class="row"><h2 style="margin:0">打刻履歴</h2><div><button class="secondary small" id="prev">◀</button> <b id="monthLabel"></b> <button class="secondary small" id="next">▶</button></div></div>
+<div id="history"></div>
+<button class="secondary" id="addReq" style="margin-top:12px;width:100%">打刻漏れ・修正を申請する</button>
+<h2>申請状況</h2><div id="myReqs"></div>
+</div>
+
+<div id="adminView" class="hidden">
+<h2>承認待ち</h2><div id="pending"></div>
+<div class="row"><h2 style="margin:0">月次一覧</h2><div><button class="secondary small" id="aprev">◀</button> <b id="amonthLabel"></b> <button class="secondary small" id="anext">▶</button></div></div>
+<div id="summary"></div>
+<button class="secondary" id="csv" style="margin-top:10px;width:100%">この月をCSVで保存</button>
+<h2>PINの再発行</h2>
+<select id="resetSel"></select><button class="secondary" id="resetBtn" style="margin-top:8px;width:100%">選んだ人のPINを再発行</button>
+<p class="notice" id="amsg" role="status"></p>
+</div>
+</section>
+
+<p class="warning" id="config-warn" hidden>config.js に Apps Script のURLが設定されていません。</p>
+</main>
+
+<dialog id="reqDlg"><form method="dialog" id="reqForm">
+<h2 style="margin-top:0">修正の申請</h2>
+<p class="muted" id="reqTarget"></p>
+<label>勤務区分</label><select id="rqShift"></select>
+<label for="rqIn">正しい出勤日時</label><input id="rqIn" type="datetime-local" required>
+<label for="rqOut">正しい退勤日時</label><input id="rqOut" type="datetime-local" required>
+<label for="rqReason">理由(必須)</label><textarea id="rqReason" maxlength="200" required></textarea>
+<p class="notice err" id="rqMsg"></p>
+<div class="actions"><button type="button" class="secondary" id="rqCancel">閉じる</button><button type="submit" class="button" style="margin:0;padding:12px;font-size:17px">申請する</button></div>
+</form></dialog>
+
+<dialog id="decDlg"><form method="dialog" id="decForm">
+<h2 style="margin-top:0">申請の判断</h2><div id="decBody" class="history" style="border:0"></div>
+<label for="decComment">コメント(却下は必須)</label><textarea id="decComment" maxlength="200"></textarea>
+<p class="notice err" id="decMsg"></p>
+<div class="actions"><button type="button" class="secondary" id="decCancel">閉じる</button><button type="button" class="secondary danger" id="decNg">却下</button><button type="button" class="button" id="decOk" style="margin:0;padding:12px;font-size:17px">承認</button></div>
+</form></dialog>
+
+<dialog id="menuDlg"><h2 style="margin-top:0">設定</h2>
+<label for="oldPin">現在のPIN</label><input id="oldPin" type="password" inputmode="numeric" maxlength="6">
+<label for="newPin">新しいPIN(数字6桁)</label><input id="newPin" type="password" inputmode="numeric" maxlength="6">
+<p class="notice" id="pinMsg"></p>
+<div class="actions"><button class="secondary" id="menuClose">閉じる</button><button class="secondary" id="pinBtn">PINを変更</button><button class="secondary danger" id="logout">ログアウト</button></div>
+</dialog>
+<script src="./config.js"></script><script src="./app.js"></script></body></html>
